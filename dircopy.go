@@ -2,22 +2,27 @@ package dircopy
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 func Copy(src string, newPath string) error {
-	src = filepath.Clean(src)
 	if isFile(src) {
 		return fmt.Errorf("non dir-path: %s", src)
 	}
-	newPath = filepath.Clean(newPath)
 	if isFile(newPath) {
 		return fmt.Errorf("non dir-path: %s", newPath)
 	}
+	if src == newPath {
+		return fmt.Errorf("two args are the same path")
+	}
 	if strings.HasPrefix(newPath, src) {
-		return fmt.Errorf("danger to invoke infinit-loop")
+		return fmt.Errorf("coping '%s' as its own subdirectory '%s' will cause infinit-loop", src, newPath)
+	}
+	if strings.HasPrefix(src, newPath) {
+		return fmt.Errorf("creating '%s' may remove current directory tree '%s'", newPath, src)
 	}
 	if _, err := os.Stat(newPath); err == nil {
 		err := os.RemoveAll(newPath)
@@ -25,7 +30,7 @@ func Copy(src string, newPath string) error {
 			return fmt.Errorf("failed to remove pre-existing dest path")
 		}
 	}
-	return copy(src, newPath)
+	return copyItem(src, newPath)
 }
 
 func isFile(path string) bool {
@@ -41,7 +46,7 @@ func isLink(path string) bool {
 	return fi.Mode()&os.ModeSymlink != 0 || fi.Mode()&os.ModeDevice != 0
 }
 
-func copy(src string, newPath string) error {
+func copyItem(src string, newPath string) error {
 	if isLink(src) {
 		return fmt.Errorf("'%s' is a link to atnother location", src)
 	}
@@ -58,18 +63,23 @@ func copy(src string, newPath string) error {
 }
 
 func addDir(src string, newPath string) error {
-	if err := os.Mkdir(newPath, 0700); err != nil {
-		return err
-	}
-
 	fi, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}
+
+	fs, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if err := os.Mkdir(newPath, fs.Mode()&os.ModePerm); err != nil {
+		return err
+	}
+
 	for _, f := range fi {
 		sp := filepath.Join(src, f.Name())
 		np := filepath.Join(newPath, f.Name())
-		err := copy(sp, np)
+		err := copyItem(sp, np)
 		if err != nil {
 			return err
 		}
@@ -79,20 +89,18 @@ func addDir(src string, newPath string) error {
 }
 
 func addFile(src string, newPath string) error {
-	d, err := os.ReadFile(src)
+	sf, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-
-	df, err := os.Create(newPath)
+	defer sf.Close()
+	nf, err := os.Create(newPath)
 	if err != nil {
 		return err
 	}
-	defer df.Close()
-
-	if _, err = df.Write(d); err != nil {
+	defer nf.Close()
+	if _, err = io.Copy(nf, sf); err != nil {
 		return err
 	}
-
 	return nil
 }
