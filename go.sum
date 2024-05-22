@@ -1,4 +1,6 @@
 github.com/AWtnb/go-everything v1.0.0 h1:ZT/wFM/9T73R04yRNwkuMq/aKdXEn1fTof/9xDfqz8I=
 github.com/AWtnb/go-everything v1.0.0/go.mod h1:zdhpGYcj7ixaLMFIUbW254KyNHyXLQ7e8r8UHMVL6xQ=
-github.com/AWtnb/go-walk v1.0.2 h1:zN1Zg3CsqbOa53QflghsxW1og3GLv226vytyxqk4YqE=
-github.com/AWtnb/go-walk v1.0.2/go.mod h1:tNLZ31VTEI2H0XyseYePG9MbApQU9YcrU08blhep0uk=
+github.com/AWtnb/go-testtree v1.0.1 h1:3z/i4N9v6hOm5NLnG3eZIdY/G3CAwX8MTk3QBoSnCOM=
+github.com/AWtnb/go-testtree v1.0.1/go.mod h1:DLDA/3xXOvgpAJkVS2BmbV7LYeYD4BAVGv0eK0Tn+jw=
+github.com/AWtnb/go-walk v1.0.3 h1:fDK11YIt+y/KUkxnPYc28HIWgxH2YMFJtfhW+Fc1HnM=
+github.com/AWtnb/go-walk v1.0.3/go.mod h1:tNLZ31VTEI2H0XyseYePG9MbApQU9YcrU08blhep0uk=

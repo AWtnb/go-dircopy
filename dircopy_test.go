@@ -1,45 +1,18 @@
 package dircopy_test
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/AWtnb/go-dircopy"
-	"github.com/AWtnb/go-walk"
+	"github.com/AWtnb/go-testtree"
 )
 
-func makeTestDir(path string) error {
-	err := os.MkdirAll(path, 0700)
-	return err
-}
-
-func makeTestFile(path string) error {
-	_, err := os.Create(path)
-	return err
-}
-
 func makeTestTree(root string) error {
-	if err := makeTestDir(root); err != nil {
-		return err
-	}
 	ds := []string{"aa/bb", "aa/cc", "bb/ee"}
-	for _, d := range ds {
-		p := filepath.Join(root, d)
-		if err := makeTestDir(p); err != nil {
-			return err
-		}
-	}
 	fs := []string{"aa/bb/cc.txt", "aa/ff.txt", "dd.txt"}
-	for _, f := range fs {
-		p := filepath.Join(root, f)
-		if err := makeTestFile(p); err != nil {
-			return err
-		}
-	}
-	return nil
+	return testtree.MakeTestTree(root, ds, fs)
 }
 
 func TestMakeTestTree(t *testing.T) {
@@ -51,20 +24,9 @@ func TestMakeTestTree(t *testing.T) {
 	showTreeContent(t, p)
 }
 
-func getChildItems(root string) []string {
-	d := walk.Dir{All: true, Root: root}
-	d.SetWalkDepth(-1)
-	d.SetWalkException("")
-	found, err := d.GetChildItem()
-	if err != nil {
-		fmt.Println(err)
-	}
-	return found
-}
-
 func showTreeContent(t *testing.T, root string) {
 	d := filepath.Dir(root)
-	for _, c := range getChildItems(root) {
+	for _, c := range testtree.GetChildItems(root) {
 		rel := strings.TrimPrefix(c, d)
 		t.Log(rel)
 	}
@@ -89,9 +51,9 @@ func TestCopy(t *testing.T) {
 func TestCopyFile(t *testing.T) {
 	t.Log("this should raise error.")
 	d := `C:\Personal\gotemp\hoge`
-	makeTestDir(d)
+	testtree.MakeTestDir(d)
 	f := filepath.Join(d, "cc.txt")
-	makeTestFile(f)
+	testtree.MakeTestFile(f)
 	err := dircopy.Copy(f, `C:\Personal\gotemp\cc.txt`)
 	if err != nil {
 		t.Logf("error was raised: %s", err)
@@ -100,7 +62,7 @@ func TestCopyFile(t *testing.T) {
 
 func TestCopyFromChild(t *testing.T) {
 	p := `C:\Personal\gotemp\hoge\aa\dd`
-	makeTestDir(p)
+	testtree.MakeTestDir(p)
 	err := dircopy.Copy(p, `C:\Personal\gotemp\dd`)
 	if err != nil {
 		t.Error(err)
@@ -110,7 +72,7 @@ func TestCopyFromChild(t *testing.T) {
 func TestCopyFromChildWarning(t *testing.T) {
 	t.Log("This should raise error.")
 	p := `C:\Personal\gotemp\hoge\aa\dd`
-	makeTestDir(p)
+	testtree.MakeTestDir(p)
 	err := dircopy.Copy(p, `C:\Personal\gotemp`)
 	if err != nil {
 		t.Logf("error was raised: %s", err)
@@ -120,7 +82,7 @@ func TestCopyFromChildWarning(t *testing.T) {
 func TestCopyWarningSamePath(t *testing.T) {
 	t.Log("This should raise error.")
 	p := `C:\Personal\gotemp\hoge`
-	makeTestDir(p)
+	testtree.MakeTestDir(p)
 	err := dircopy.Copy(p, p)
 	if err != nil {
 		t.Logf("error was raised: %s", err)
@@ -130,9 +92,9 @@ func TestCopyWarningSamePath(t *testing.T) {
 func TestCopyWarningLoop(t *testing.T) {
 	t.Log("This should raise error due to infinit loop.")
 	d1 := `C:\Personal\gotemp\hoge`
-	makeTestDir(d1)
+	testtree.MakeTestDir(d1)
 	d2 := `C:\Personal\gotemp\hoge\piyo`
-	makeTestDir(d2)
+	testtree.MakeTestDir(d2)
 	err := dircopy.Copy(d1, d2)
 	if err != nil {
 		t.Logf("error was raised: %s", err)

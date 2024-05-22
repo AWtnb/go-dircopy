@@ -1,7 +1,10 @@
 module github.com/AWtnb/go-dircopy
 
-go 1.21.4
+go 1.22.3
 
-require github.com/AWtnb/go-walk v1.0.2
+require github.com/AWtnb/go-testtree v1.0.1
 
-require github.com/AWtnb/go-everything v1.0.0 // indirect
+require (
+	github.com/AWtnb/go-everything v1.0.0 // indirect
+	github.com/AWtnb/go-walk v1.0.3 // indirect
+)
